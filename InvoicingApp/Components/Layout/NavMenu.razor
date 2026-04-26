@@ -1,0 +1,100 @@
+﻿@using InvoicingApp.Services
+@inject AuthService Auth
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<!-- Brand -->
+<div class="fp-brand">
+    <div class="fp-brand-icon">
+        <i class="bi bi-receipt-cutoff"></i>
+    </div>
+    <div class="fp-brand-text">
+        <span class="fp-brand-name">Factura<span class="fp-grad">Pro</span></span>
+        <span class="fp-brand-sub">v1.0 · .NET Blazor</span>
+    </div>
+</div>
+
+<!-- Navigation links -->
+<nav class="fp-nav">
+    <NavLink class="fp-nav-item" href="dashboard" Match="NavLinkMatch.All">
+        <span class="fp-nav-icon"><i class="bi bi-speedometer2"></i></span>
+        <span class="fp-nav-text">
+            <span class="fp-nav-label">Dashboard</span>
+            <span class="fp-nav-sub">KPIs &amp; analytics</span>
+        </span>
+    </NavLink>
+
+    <NavLink class="fp-nav-item" href="factures">
+        <span class="fp-nav-icon"><i class="bi bi-receipt"></i></span>
+        <span class="fp-nav-text">
+            <span class="fp-nav-label">Factures</span>
+            <span class="fp-nav-sub">Gestion complète</span>
+        </span>
+    </NavLink>
+
+    <NavLink class="fp-nav-item" href="clients">
+        <span class="fp-nav-icon"><i class="bi bi-people-fill"></i></span>
+        <span class="fp-nav-text">
+            <span class="fp-nav-label">Clients</span>
+            <span class="fp-nav-sub">Répertoire</span>
+        </span>
+    </NavLink>
+
+    <NavLink class="fp-nav-item" href="produits">
+        <span class="fp-nav-icon"><i class="bi bi-box-seam-fill"></i></span>
+        <span class="fp-nav-text">
+            <span class="fp-nav-label">Produits</span>
+            <span class="fp-nav-sub">Catalogue TVA</span>
+        </span>
+    </NavLink>
+</nav>
+
+<!-- Footer -->
+<div class="fp-sidebar-footer">
+    <div class="fp-online-badge">
+        <span class="fp-online-dot"></span>
+        <span>Système actif</span>
+        <span class="fp-online-label">online</span>
+    </div>
+    <div class="fp-user-card">
+        <div class="fp-avatar">FP</div>
+        <div class="fp-user-info">
+            <span class="fp-user-name">Admin</span>
+            <span class="fp-user-email">admin@facturapro.tn</span>
+        </div>
+        <button class="fp-logout-btn" title="Déconnexion" @onclick="HandleLogout">
+            <i class="bi bi-box-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+<style>
+    .fp-logout-btn {
+        display: grid;
+        place-items: center;
+        height: 32px;
+        width: 32px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        color: var(--muted-fg, #6b7280);
+        font-size: 1rem;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.15s, color 0.15s;
+        margin-left: auto;
+    }
+
+    .fp-logout-btn:hover {
+        background: hsl(0 75% 60% / 0.12);
+        color: hsl(0 75% 65%);
+    }
+</style>
+
+@code {
+    private void HandleLogout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/login");
+    }
+}

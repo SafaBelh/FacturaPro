@@ -1,0 +1,82 @@
+@page "/produit-edit"
+@page "/produit-edit/{Id:int}"
+@rendermode InteractiveServer
+@inject IProduitService ProduitService
+@inject NavigationManager Nav
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">@(Id.HasValue ? "Modifier le produit" : "Nouveau produit")</h1>
+        <p class="fp-page-sub">@(Id.HasValue ? "Mettez à jour les informations du produit." : "Remplissez les informations ci-dessous.")</p>
+    </div>
+    <a href="/produits" class="fp-btn-ghost">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<div class="fp-form-page">
+    <EditForm Model="produit" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="fp-validation-summary" />
+
+        <div class="fp-glass-card" style="max-width:560px">
+            <h3 class="fp-section-title">Informations produit</h3>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Désignation *</label>
+                <InputText @bind-Value="produit.Nom" class="fp-input" placeholder="Ex: Développement Blazor (jour)" />
+                <ValidationMessage For="@(() => produit.Nom)" class="fp-val-msg" />
+            </div>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Prix HT (DT)</label>
+                <InputNumber @bind-Value="produit.PrixHT" class="fp-input" step="0.001" placeholder="0.000" />
+            </div>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Taux TVA</label>
+                <InputSelect @bind-Value="produit.TauxTVA" class="fp-input">
+                    <option value="0.19">19 %</option>
+                    <option value="0.13">13 %</option>
+                    <option value="0.07">7 %</option>
+                </InputSelect>
+            </div>
+
+            <!-- Live TTC preview -->
+            <div class="fp-ttc-preview">
+                <span class="fp-muted">Prix TTC estimé :</span>
+                <span class="fp-mono fp-grad" style="font-size:1.1rem;font-weight:700">
+                    @((produit.PrixHT * (1 + produit.TauxTVA)).ToString("F3")) DT
+                </span>
+            </div>
+
+            <div class="fp-form-actions">
+                <button type="submit" class="fp-btn-primary">
+                    <i class="bi bi-floppy-fill me-2"></i> Enregistrer
+                </button>
+                <a href="/produits" class="fp-btn-ghost">Annuler</a>
+            </div>
+        </div>
+
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private InvoicingApp.Models.Produit produit = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+            produit = await ProduitService.GetProduitByIdAsync(Id.Value) ?? new InvoicingApp.Models.Produit();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id.HasValue)
+            await ProduitService.UpdateProduitAsync(produit);
+        else
+            await ProduitService.AddProduitAsync(produit);
+        Nav.NavigateTo("/produits");
+    }
+}

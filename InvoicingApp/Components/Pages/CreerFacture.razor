@@ -1,0 +1,210 @@
+@page "/creer-facture"
+@rendermode InteractiveServer
+@using InvoicingApp.Models
+@using Microsoft.JSInterop
+@inject IClientService ClientService
+@inject IProduitService ProduitService
+@inject IFactureService FactureService
+@inject ITimbreFiscalService TimbreService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">Nouvelle facture</h1>
+        <p class="fp-page-sub">Remplissez les informations ci-dessous.</p>
+    </div>
+    <a href="/factures" class="fp-btn-ghost">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+@if (clients == null || produits == null)
+{
+    <div class="fp-empty-state">
+        <span class="fp-spinner"></span> Chargement des données…
+    </div>
+}
+else
+{
+    <EditForm Model="facture" OnValidSubmit="CreateFacture">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="fp-validation-summary" />
+
+        <div class="fp-editor-grid">
+            <!-- Left panel -->
+            <div class="fp-glass-card" style="display:flex;flex-direction:column;gap:20px">
+
+                <h3 class="fp-section-title">Informations générales</h3>
+
+                <div class="fp-form-grid">
+                    <div class="fp-field-wrap">
+                        <label class="fp-field-label">Client</label>
+                        <InputSelect @bind-Value="facture.ClientId" class="fp-input">
+                            <option value="0">— Sélectionnez un client —</option>
+                            @foreach (var c in clients)
+                            {
+                                <option value="@c.Id">@c.Nom</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => facture.ClientId)" class="fp-val-msg" />
+                    </div>
+                    <div class="fp-field-wrap">
+                        <label class="fp-field-label">Date</label>
+                        <InputDate @bind-Value="facture.Date" class="fp-input" />
+                    </div>
+                    <div class="fp-field-wrap">
+                        <label class="fp-field-label">Timbre fiscal (DT)</label>
+                        <InputNumber @bind-Value="facture.TimbreFiscal" class="fp-input" step="0.1" />
+                        <ValidationMessage For="@(() => facture.TimbreFiscal)" class="fp-val-msg" />
+                    </div>
+                </div>
+
+                <!-- Lines -->
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                        <h3 class="fp-section-title" style="margin:0">Lignes de facture</h3>
+                        <button type="button" class="fp-btn-outline" style="font-size:.8rem;padding:5px 12px" @onclick="AddLigne">
+                            <i class="bi bi-plus-circle me-1"></i> Ajouter ligne
+                        </button>
+                    </div>
+
+                    <div style="border-radius:12px;border:1px solid var(--fp-border);overflow:hidden">
+                        <table class="fp-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th style="text-align:right;width:80px">Qté</th>
+                                    <th style="text-align:right;width:120px">PU HT (DT)</th>
+                                    <th style="text-align:right;width:80px">TVA</th>
+                                    <th style="text-align:right;width:100px">HT (DT)</th>
+                                    <th style="text-align:right;width:100px">TVA (DT)</th>
+                                    <th style="width:44px"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < lignes.Count; i++)
+                                {
+                                    var ligne = lignes[i];
+                                    <tr style="border-top:1px solid var(--fp-border)">
+                                        <td style="padding:6px 8px">
+                                            <InputSelect @bind-Value="ligne.ProduitId" @bind:event="oninput" class="fp-input" style="height:34px;font-size:.8rem">
+                                                <option value="0">— Produit —</option>
+                                                @foreach (var p in produits)
+                                                {
+                                                    <option value="@p.Id">@p.Nom</option>
+                                                }
+                                            </InputSelect>
+                                        </td>
+                                        <td style="padding:6px 8px">
+                                            <InputNumber @bind-Value="ligne.Quantite" class="fp-input" style="height:34px;text-align:right" min="1" />
+                                        </td>
+                                        <td style="padding:6px 8px">
+                                            <InputNumber @bind-Value="ligne.PrixUnitaireHT" class="fp-input" style="height:34px;text-align:right" step="0.01" />
+                                        </td>
+                                        <td class="fp-mono" style="text-align:right;padding:6px 12px">@(ligne.TauxTVA * 100)%</td>
+                                        <td class="fp-mono" style="text-align:right;padding:6px 12px">@ligne.MontantHT.ToString("F2")</td>
+                                        <td class="fp-mono" style="text-align:right;padding:6px 12px">@ligne.MontantTVA.ToString("F2")</td>
+                                        <td style="padding:6px 8px">
+                                            <button type="button" class="fp-icon-btn danger" @onclick="() => RemoveLigne(i)">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!lignes.Any())
+                                {
+                                    <tr><td colspan="7" class="fp-table-empty">Aucune ligne. Cliquez sur « Ajouter ligne ».</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right summary panel -->
+            <div class="fp-summary-panel">
+                <h3 class="fp-section-title">Récapitulatif</h3>
+                <div class="fp-total-row">
+                    <span class="fp-muted">Total HT</span>
+                    <span class="fp-mono">@totalHT.ToString("F2") DT</span>
+                </div>
+                <div class="fp-total-row">
+                    <span class="fp-muted">Total TVA</span>
+                    <span class="fp-mono">@totalTVA.ToString("F2") DT</span>
+                </div>
+                <div class="fp-total-row">
+                    <span class="fp-muted">Timbre fiscal</span>
+                    <span class="fp-mono">@facture.TimbreFiscal.ToString("F2") DT</span>
+                </div>
+                <div class="fp-total-final" style="margin-bottom:24px">
+                    <span style="font-weight:700">Total TTC</span>
+                    <span class="fp-total-big fp-grad">@totalTTC.ToString("F2") DT</span>
+                </div>
+
+                <button type="submit" class="fp-btn-primary" style="width:100%;justify-content:center">
+                    <i class="bi bi-floppy-fill me-2"></i> Enregistrer la facture
+                </button>
+                <a href="/factures" class="fp-btn-ghost" style="width:100%;justify-content:center;margin-top:10px">
+                    Annuler
+                </a>
+            </div>
+        </div>
+
+    </EditForm>
+}
+
+@code {
+    private List<Client>  clients  = new();
+    private List<Produit> produits = new();
+    private Facture facture = new Facture { Date = DateTime.Now, TimbreFiscal = 1.0m, ClientId = 0 };
+    private List<LigneFacture> lignes = new();
+
+    private decimal totalHT  => lignes.Sum(l => l.MontantHT);
+    private decimal totalTVA => lignes.Sum(l => l.MontantTVA);
+    private decimal totalTTC => totalHT + totalTVA + facture.TimbreFiscal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clients  = await ClientService.GetClientsAsync();
+        produits = await ProduitService.GetProduitsAsync();
+        facture.TimbreFiscal = TimbreService.GetTimbreFiscal();
+        AddLigne();
+    }
+
+    private void AddLigne()
+    {
+        lignes.Add(new LigneFacture { Quantite = 1, PrixUnitaireHT = 0, TauxTVA = 0.19m });
+    }
+
+    private void RemoveLigne(int index)
+    {
+        lignes.RemoveAt(index);
+        StateHasChanged();
+    }
+
+    private async Task CreateFacture()
+    {
+        if (facture.ClientId == 0)
+        {
+            await JS.InvokeVoidAsync("alert", "Veuillez sélectionner un client.");
+            return;
+        }
+        foreach (var ligne in lignes)
+        {
+            if (ligne.ProduitId != 0)
+            {
+                var produit = produits.FirstOrDefault(p => p.Id == ligne.ProduitId);
+                if (produit != null)
+                {
+                    ligne.PrixUnitaireHT = produit.PrixHT;
+                    ligne.TauxTVA        = produit.TauxTVA;
+                }
+            }
+        }
+        await FactureService.AddFactureAsync(facture, lignes);
+        await JS.InvokeVoidAsync("alert", "Facture enregistrée avec succès.");
+        Nav.NavigateTo("/factures");
+    }
+}

@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+@using InvoicingApp.Services
+@inject AuthService AuthService
+@inject NavigationManager Nav
+
+<div class="fp-shell">
+    <!-- Sidebar -->
+    <div class="fp-sidebar">
+        <NavMenu />
+    </div>
+
+    <!-- Main area -->
+    <div class="fp-main">
+        <header class="fp-topbar">
+            <div class="fp-topbar-left">
+                <span class="fp-topbar-date">
+                    <i class="bi bi-calendar3 me-2"></i>@DateTime.Now.ToString("dddd dd MMMM yyyy")
+                </span>
+            </div>
+            <div class="fp-topbar-right">
+                <a href="/creer-facture" class="fp-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Nouvelle facture
+                </a>
+            </div>
+        </header>
+
+        <main class="fp-content">
+            @Body
+        </main>
+    </div>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Une erreur s'est produite.
+    <a href="." class="reload">Recharger</a>
+    <span class="dismiss">✕</span>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        var currentPath = new Uri(Nav.Uri).AbsolutePath.TrimStart('/');
+        if (!AuthService.IsLoggedIn && currentPath != "login")
+        {
+            Nav.NavigateTo("/login");
+        }
+    }
+}

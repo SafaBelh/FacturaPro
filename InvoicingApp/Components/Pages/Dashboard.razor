@@ -1,0 +1,470 @@
+@* @page "/dashboard"
+@rendermode InteractiveServer
+@using InvoicingApp.Models
+@using System.Globalization
+@inject IFactureService FactureService
+
+<!-- Page header -->
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">Tableau de bord</h1>
+        <p class="fp-page-sub">Aperçu en temps réel de votre activité de facturation.</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="fp-kpi-grid">
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-percent"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +8%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">TVA totale</div>
+            <div class="fp-kpi-value">@totalTVA.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon warn">
+                <i class="bi bi-stamp-fill"></i>
+            </div>
+            <span class="fp-kpi-delta down">
+                <i class="bi bi-arrow-down-right"></i> stable
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">Timbre fiscal total</div>
+            <div class="fp-kpi-value">@totalTimbre.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +12%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">CA Hors Taxes</div>
+            <div class="fp-kpi-value">@caHT.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +10%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">CA TTC (avec timbre)</div>
+            <div class="fp-kpi-value">@caTTC.ToString("F2") DT</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Charts -->
+<div class="fp-charts-col">
+
+    <!-- TVA par taux -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>TVA collectée par taux</h3>
+                <p class="fp-chart-sub">Répartition par taux applicable</p>
+            </div>
+        </div>
+        @if (tvaParTaux.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@tvaParTaux" CategoryProperty="Key" ValueProperty="Value"
+                    Fill="#2ec090" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+                <RadzenLegend Visible="false" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée TVA.</p> }
+    </div>
+
+    <!-- CA HT vs TTC par client -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Chiffre d'affaires par client</h3>
+                <p class="fp-chart-sub">HT vs TTC</p>
+            </div>
+        </div>
+        @if (caParClient.Any() && ttcParClient.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@caParClient"  CategoryProperty="Key" ValueProperty="Value" Title="HT"  Fill="#2ec090" />
+                <RadzenColumnSeries Data="@ttcParClient" CategoryProperty="Key" ValueProperty="Value" Title="TTC" Fill="#38bdf8" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée client.</p> }
+    </div>
+
+    <!-- CA par mois -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Chiffre d'affaires par mois</h3>
+                <p class="fp-chart-sub">HT vs TTC — @DateTime.Now.Year</p>
+            </div>
+        </div>
+        @if (caParMois.Any() && ttcParMois.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenLineSeries Data="@caParMois"  CategoryProperty="Key" ValueProperty="Value" Title="HT"  Stroke="#2ec090" StrokeWidth="2.5" Smooth="true" />
+                <RadzenLineSeries Data="@ttcParMois" CategoryProperty="Key" ValueProperty="Value" Title="TTC" Stroke="#38bdf8" StrokeWidth="2.5" Smooth="true" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée mensuelle.</p> }
+    </div>
+
+    <!-- Ventes par produit -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Ventes par produit</h3>
+                <p class="fp-chart-sub">HT vs TTC</p>
+            </div>
+        </div>
+        @if (ventesParProduit.Any() && ttcParProduit.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@ventesParProduit" CategoryProperty="Key" ValueProperty="Value" Title="HT"  Fill="#2ec090" />
+                <RadzenColumnSeries Data="@ttcParProduit"    CategoryProperty="Key" ValueProperty="Value" Title="TTC" Fill="#38bdf8" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune vente enregistrée.</p> }
+    </div>
+
+</div>
+
+@code {
+    private decimal totalTVA = 0;
+    private decimal totalTimbre = 0;
+    private decimal caHT = 0;
+    private decimal caTTC = 0;
+    private List<ChartData> tvaParTaux = new();
+    private List<ChartData> caParClient = new();
+    private List<ChartData> ttcParClient = new();
+    private List<ChartData> caParMois = new();
+    private List<ChartData> ttcParMois = new();
+    private List<ChartData> ventesParProduit = new();
+    private List<ChartData> ttcParProduit = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalTVA    = await FactureService.GetTotalTVAAsync();
+        totalTimbre = await FactureService.GetTotalTimbreFiscalAsync();
+        caHT        = await FactureService.GetChiffreAffairesHTAsync();
+        caTTC       = await FactureService.GetChiffreAffairesTTCAsync();
+
+        var dictTVA = await FactureService.GetTVAParTauxAsync();
+        tvaParTaux  = dictTVA.Select(kv => new ChartData { Key = (kv.Key * 100).ToString("F0") + "%", Value = kv.Value }).ToList();
+
+        var dictCAHTClient  = await FactureService.GetCAHTPerClientAsync();
+        caParClient         = dictCAHTClient.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+        var dictTTCCClient  = await FactureService.GetTTCCPerClientAsync();
+        ttcParClient        = dictTTCCClient.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+
+        var dictCAHTMois = await FactureService.GetCAHTPerMonthAsync();
+        caParMois        = dictCAHTMois.OrderBy(kv => kv.Key)
+            .Select(kv => new ChartData { Key = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(kv.Key), Value = kv.Value }).ToList();
+        var dictTTCCMois = await FactureService.GetTTCCPerMonthAsync();
+        ttcParMois       = dictTTCCMois.OrderBy(kv => kv.Key)
+            .Select(kv => new ChartData { Key = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(kv.Key), Value = kv.Value }).ToList();
+
+        var dictCAHTProd = await FactureService.GetSalesPerProductAsync();
+        ventesParProduit = dictCAHTProd.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+        var dictTTCCProd = await FactureService.GetTTCCPerProductAsync();
+        ttcParProduit    = dictTTCCProd.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+    }
+
+    private class ChartData
+    {
+        public string Key   { get; set; } = "";
+        public decimal Value { get; set; }
+    }
+} *@
+
+
+@page "/dashboard"
+@rendermode InteractiveServer
+@using InvoicingApp.Models
+@using System.Globalization
+@inject IFactureService FactureService
+
+<!-- Page header -->
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">Tableau de bord</h1>
+        <p class="fp-page-sub">Aperçu en temps réel de votre activité de facturation.</p>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="fp-kpi-grid">
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-percent"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +8%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">TVA totale</div>
+            <div class="fp-kpi-value">@totalTVA.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon warn">
+                <i class="bi bi-stamp-fill"></i>
+            </div>
+            <span class="fp-kpi-delta down">
+                <i class="bi bi-arrow-down-right"></i> stable
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">Timbre fiscal total</div>
+            <div class="fp-kpi-value">@totalTimbre.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +12%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">CA Hors Taxes</div>
+            <div class="fp-kpi-value">@caHT.ToString("F2") DT</div>
+        </div>
+    </div>
+
+    <div class="fp-kpi-card">
+        <div class="fp-kpi-top">
+            <div class="fp-kpi-icon">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <span class="fp-kpi-delta up">
+                <i class="bi bi-arrow-up-right"></i> +10%
+            </span>
+        </div>
+        <div class="fp-kpi-body">
+            <div class="fp-kpi-label">CA TTC (avec timbre)</div>
+            <div class="fp-kpi-value">@caTTC.ToString("F2") DT</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts row -->
+<div class="fp-charts-col">
+
+    <!-- TVA par taux -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>TVA collectée par taux</h3>
+                <p class="fp-chart-sub">Répartition par taux applicable</p>
+            </div>
+        </div>
+        @if (tvaParTaux.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@tvaParTaux" CategoryProperty="Key" ValueProperty="Value" Fill="#2ec090" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+                <RadzenLegend Visible="false" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée TVA.</p> }
+    </div>
+
+    <!-- CA HT vs TTC par client (grouped columns) -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Chiffre d'affaires par client</h3>
+                <p class="fp-chart-sub">HT vs TTC</p>
+            </div>
+        </div>
+        @if (caParClient.Any() && ttcParClient.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@caParClient" CategoryProperty="Key" ValueProperty="Value" Title="HT" Fill="#2ec090" />
+                <RadzenColumnSeries Data="@ttcParClient" CategoryProperty="Key" ValueProperty="Value" Title="TTC" Fill="#38bdf8" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée client.</p> }
+    </div>
+
+    <!-- CA par mois (lines) -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Chiffre d'affaires par mois</h3>
+                <p class="fp-chart-sub">HT vs TTC — @DateTime.Now.Year</p>
+            </div>
+        </div>
+        @if (caParMois.Any() && ttcParMois.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenLineSeries Data="@caParMois" CategoryProperty="Key" ValueProperty="Value" Title="HT" Stroke="#2ec090" StrokeWidth="2.5" Smooth="true" />
+                <RadzenLineSeries Data="@ttcParMois" CategoryProperty="Key" ValueProperty="Value" Title="TTC" Stroke="#38bdf8" StrokeWidth="2.5" Smooth="true" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune donnée mensuelle.</p> }
+    </div>
+
+    <!-- Ventes par produit (columns) -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Ventes par produit</h3>
+                <p class="fp-chart-sub">HT vs TTC</p>
+            </div>
+        </div>
+        @if (ventesParProduit.Any() && ttcParProduit.Any())
+        {
+            <RadzenChart Style="height:260px">
+                <RadzenColumnSeries Data="@ventesParProduit" CategoryProperty="Key" ValueProperty="Value" Title="HT" Fill="#2ec090" />
+                <RadzenColumnSeries Data="@ttcParProduit" CategoryProperty="Key" ValueProperty="Value" Title="TTC" Fill="#38bdf8" />
+                <RadzenValueAxis Formatter="@(value => ((double)value).ToString("F2") + " DT")">
+                    <RadzenGridLines Visible="true" Stroke="rgba(255,255,255,0.05)" />
+                </RadzenValueAxis>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else { <p class="fp-empty">Aucune vente enregistrée.</p> }
+    </div>
+
+    <!-- 🆕 NOUVEAU : Répartition du CA TTC par client (Donut / Pie) -->
+    <div class="fp-chart-card">
+        <div class="fp-chart-header">
+            <div>
+                <h3>Répartition du CA TTC par client</h3>
+                <p class="fp-chart-sub">Parts de marché (TTC)</p>
+            </div>
+        </div>
+        @if (ttcParClient.Any())
+        {
+            <RadzenChart Style="height:300px">
+                <RadzenDonutSeries Data="@ttcParClient"
+                                   CategoryProperty="Key"
+                                   ValueProperty="Value"
+                                   Title="Client">
+                    <TitleTemplate>
+                        <div style="text-align:center">
+                            <div style="font-size:0.8rem; opacity:0.7;">Total TTC</div>
+                            <div style="font-size:1.4rem; font-weight:800;">@ttcParClient.Sum(c => c.Value).ToString("F0") DT</div>
+                        </div>
+                    </TitleTemplate>
+                </RadzenDonutSeries>
+                <RadzenChartTooltipOptions Style="background:#0f1629;border:1px solid #1e2d47;color:#e2eaf7;border-radius:10px;font-family:Sora,sans-serif" />
+            </RadzenChart>
+        }
+        else
+        {
+            <p class="fp-empty">Aucune donnée client.</p>
+        }
+    </div>
+
+</div>
+
+@code {
+    private decimal totalTVA = 0;
+    private decimal totalTimbre = 0;
+    private decimal caHT = 0;
+    private decimal caTTC = 0;
+    private List<ChartData> tvaParTaux = new();
+    private List<ChartData> caParClient = new();
+    private List<ChartData> ttcParClient = new();
+    private List<ChartData> caParMois = new();
+    private List<ChartData> ttcParMois = new();
+    private List<ChartData> ventesParProduit = new();
+    private List<ChartData> ttcParProduit = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalTVA = await FactureService.GetTotalTVAAsync();
+        totalTimbre = await FactureService.GetTotalTimbreFiscalAsync();
+        caHT = await FactureService.GetChiffreAffairesHTAsync();
+        caTTC = await FactureService.GetChiffreAffairesTTCAsync();
+
+        var dictTVA = await FactureService.GetTVAParTauxAsync();
+        tvaParTaux = dictTVA.Select(kv => new ChartData { Key = (kv.Key * 100).ToString("F0") + "%", Value = kv.Value }).ToList();
+
+        var dictCAHTClient = await FactureService.GetCAHTPerClientAsync();
+        caParClient = dictCAHTClient.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+        var dictTTCCClient = await FactureService.GetTTCCPerClientAsync();
+        ttcParClient = dictTTCCClient.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+
+        var dictCAHTMois = await FactureService.GetCAHTPerMonthAsync();
+        caParMois = dictCAHTMois.OrderBy(kv => kv.Key)
+            .Select(kv => new ChartData { Key = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(kv.Key), Value = kv.Value }).ToList();
+        var dictTTCCMois = await FactureService.GetTTCCPerMonthAsync();
+        ttcParMois = dictTTCCMois.OrderBy(kv => kv.Key)
+            .Select(kv => new ChartData { Key = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(kv.Key), Value = kv.Value }).ToList();
+
+        var dictCAHTProd = await FactureService.GetSalesPerProductAsync();
+        ventesParProduit = dictCAHTProd.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+        var dictTTCCProd = await FactureService.GetTTCCPerProductAsync();
+        ttcParProduit = dictTTCCProd.Select(kv => new ChartData { Key = kv.Key, Value = kv.Value }).ToList();
+    }
+
+    private class ChartData
+    {
+        public string Key { get; set; } = "";
+        public decimal Value { get; set; }
+    }
+}

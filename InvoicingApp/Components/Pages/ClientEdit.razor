@@ -1,0 +1,70 @@
+@page "/client-edit"
+@page "/client-edit/{Id:int}"
+@rendermode InteractiveServer
+@inject IClientService ClientService
+@inject NavigationManager Nav
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">@(Id.HasValue ? "Modifier le client" : "Nouveau client")</h1>
+        <p class="fp-page-sub">@(Id.HasValue ? "Mettez à jour les informations du client." : "Remplissez les informations ci-dessous.")</p>
+    </div>
+    <a href="/clients" class="fp-btn-ghost">
+        <i class="bi bi-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+<div class="fp-form-page">
+    <EditForm Model="client" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="fp-validation-summary" />
+
+        <div class="fp-glass-card" style="max-width:560px">
+            <h3 class="fp-section-title">Informations client</h3>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Nom / Raison sociale *</label>
+                <InputText @bind-Value="client.Nom" class="fp-input" placeholder="Ex: Société XYZ" />
+                <ValidationMessage For="@(() => client.Nom)" class="fp-val-msg" />
+            </div>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Adresse</label>
+                <InputText @bind-Value="client.Adresse" class="fp-input" placeholder="Ex: Tunis, Tunisie" />
+            </div>
+
+            <div class="fp-field-wrap">
+                <label class="fp-field-label">Matricule fiscal</label>
+                <InputText @bind-Value="client.MatriculeFiscale" class="fp-input fp-mono" placeholder="Ex: 1234567/A/M/000" />
+            </div>
+
+            <div class="fp-form-actions">
+                <button type="submit" class="fp-btn-primary">
+                    <i class="bi bi-floppy-fill me-2"></i> Enregistrer
+                </button>
+                <a href="/clients" class="fp-btn-ghost">Annuler</a>
+            </div>
+        </div>
+
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private InvoicingApp.Models.Client client = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+            client = await ClientService.GetClientByIdAsync(Id.Value) ?? new InvoicingApp.Models.Client();
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id.HasValue)
+            await ClientService.UpdateClientAsync(client);
+        else
+            await ClientService.AddClientAsync(client);
+        Nav.NavigateTo("/clients");
+    }
+}

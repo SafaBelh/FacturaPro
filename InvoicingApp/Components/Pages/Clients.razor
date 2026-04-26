@@ -1,0 +1,96 @@
+@page "/clients"
+@rendermode InteractiveServer
+@using InvoicingApp.Models
+@using Microsoft.JSInterop
+@inject IClientService ClientService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">Clients</h1>
+        <p class="fp-page-sub">@clients.Count client(s) enregistré(s)</p>
+    </div>
+    <a href="/client-edit" class="fp-btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Nouveau client
+    </a>
+</div>
+
+@if (clients == null || !clients.Any())
+{
+    <div class="fp-empty-state">
+        <i class="bi bi-people fs-1 mb-3 d-block" style="opacity:.35"></i>
+        Aucun client enregistré.
+    </div>
+}
+else
+{
+    <div class="fp-cards-grid">
+        @foreach (var client in clients)
+        {
+            <div class="fp-client-card">
+                <div class="fp-client-top">
+                    <div class="fp-client-avatar">
+                        @(string.Join("", client.Nom.Split(' ').Take(2).Select(w => w.Length > 0 ? w[0].ToString().ToUpper() : "")))
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@client.Nom</div>
+                        @if (!string.IsNullOrEmpty(client.MatriculeFiscale))
+                        {
+                            <div class="fp-mono fp-muted" style="font-size:.72rem">@client.MatriculeFiscale</div>
+                        }
+                    </div>
+                    <div style="display:flex;gap:4px;flex-shrink:0">
+                        <a href="/client-edit/@client.Id" class="fp-icon-btn" title="Modifier">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <button class="fp-icon-btn danger" title="Supprimer" @onclick="() => Delete(client.Id)">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="fp-client-details">
+                    @if (!string.IsNullOrEmpty(client.Adresse))
+                    {
+                        <div class="fp-client-detail-row">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>@client.Adresse</span>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(client.MatriculeFiscale))
+                    {
+                        <div class="fp-client-detail-row">
+                            <i class="bi bi-building-fill"></i>
+                            <span class="fp-mono">MF : @client.MatriculeFiscale</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Client> clients = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClients();
+    }
+
+    private async Task LoadClients()
+    {
+        clients = await ClientService.GetClientsAsync();
+    }
+
+    private async Task Delete(int id)
+    {
+        if (await JS.InvokeAsync<bool>("window.confirm", "Supprimer ce client ?"))
+        {
+            await ClientService.DeleteClientAsync(id);
+            await LoadClients();
+            StateHasChanged();
+        }
+    }
+}

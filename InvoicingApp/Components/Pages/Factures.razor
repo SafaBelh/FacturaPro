@@ -1,0 +1,93 @@
+@page "/factures"
+@rendermode InteractiveServer
+@using InvoicingApp.Models
+@using Microsoft.JSInterop
+@inject IFactureService FactureService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="fp-page-header">
+    <div>
+        <h1 class="fp-page-title">Factures</h1>
+        <p class="fp-page-sub">@factures.Count facture(s) enregistrée(s)</p>
+    </div>
+    <a href="/creer-facture" class="fp-btn-primary">
+        <i class="bi bi-plus-lg me-1"></i> Nouvelle facture
+    </a>
+</div>
+
+@if (factures == null || !factures.Any())
+{
+    <div class="fp-empty-state">
+        <i class="bi bi-receipt fs-1 mb-3 d-block" style="opacity:.35"></i>
+        Aucune facture enregistrée.
+    </div>
+}
+else
+{
+    <div class="fp-table-wrap">
+        <div style="overflow-x:auto">
+            <table class="fp-table">
+                <thead>
+                    <tr>
+                        <th>N°</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th style="text-align:right">Total HT</th>
+                        <th style="text-align:right">Total TTC</th>
+                        <th style="text-align:right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in factures)
+                    {
+                        <tr class="fp-tr-hover">
+                            <td><span class="fp-num-badge">#@f.Id</span></td>
+                            <td class="fp-muted">@f.Date.ToShortDateString()</td>
+                            <td style="font-weight:600">@f.Client?.Nom</td>
+                            <td style="text-align:right" class="fp-mono">@f.TotalHT.ToString("F2") DT</td>
+                            <td style="text-align:right;font-weight:700" class="fp-mono">@f.TotalTTC.ToString("F2") DT</td>
+                            <td style="text-align:right">
+                                <div class="fp-actions">
+                                    <a href="/facture/@f.Id" class="fp-icon-btn" title="Détail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="/edit-facture/@f.Id" class="fp-icon-btn" title="Modifier">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <button class="fp-icon-btn danger" title="Supprimer" @onclick="() => Delete(f.Id)">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Facture> factures = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFactures();
+    }
+
+    private async Task LoadFactures()
+    {
+        factures = await FactureService.GetFacturesAsync();
+    }
+
+    private async Task Delete(int id)
+    {
+        if (await JS.InvokeAsync<bool>("confirm", "Supprimer cette facture ?"))
+        {
+            await FactureService.DeleteFactureAsync(id);
+            await LoadFactures();
+            StateHasChanged();
+        }
+    }
+}
