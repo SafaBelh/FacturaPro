@@ -2521,11 +2521,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/mac/Desktop/InvoicingProjectCopy/InvoicingApp/InvoicingApp.csproj",
+      "projectUniqueName": "/Users/mac/Desktop/InvoicingProject-FacturaPro/InvoicingApp/InvoicingApp.csproj",
       "projectName": "InvoicingApp",
-      "projectPath": "/Users/mac/Desktop/InvoicingProjectCopy/InvoicingApp/InvoicingApp.csproj",
+      "projectPath": "/Users/mac/Desktop/InvoicingProject-FacturaPro/InvoicingApp/InvoicingApp.csproj",
       "packagesPath": "/Users/mac/.nuget/packages/",
-      "outputPath": "/Users/mac/Desktop/InvoicingProjectCopy/InvoicingApp/obj/",
+      "outputPath": "/Users/mac/Desktop/InvoicingProject-FacturaPro/InvoicingApp/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/mac/.nuget/NuGet/NuGet.Config"

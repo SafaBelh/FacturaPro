@@ -13,7 +13,7 @@ public class FactureService : IFactureService
         _context = context;
     }
 
-    // Basic CRUD
+    // 🟣🟣🟣 BASIC CRUD LOGIC 🟣🟣🟣 //
     public async Task<List<Facture>> GetFacturesAsync()
     {
         return await _context.Factures
@@ -55,31 +55,34 @@ public class FactureService : IFactureService
 
     public async Task UpdateFactureAsync(Facture facture, List<LigneFacture> lignes)
     {
-        // Load the existing facture without its lines to avoid tracking conflicts
+        
         var existingFacture = await _context.Factures.FindAsync(facture.Id);
         if (existingFacture == null)
             throw new InvalidOperationException("Facture non trouvée.");
 
-        // Update scalar properties
+        
         existingFacture.ClientId = facture.ClientId;
         existingFacture.Date = facture.Date;
         existingFacture.TimbreFiscal = facture.TimbreFiscal;
 
-        // Remove all existing lines for this facture (using FactureId)
+        
         var existingLines = _context.LignesFacture.Where(l => l.FactureId == facture.Id);
         _context.LignesFacture.RemoveRange(existingLines);
 
-        // Add the new lines
+        
         foreach (var ligne in lignes)
         {
             ligne.FactureId = facture.Id;
-            ligne.Id = 0;               // ensure EF treats it as a new entity
+            ligne.Id = 0;               
             _context.LignesFacture.Add(ligne);
         }
 
         await _context.SaveChangesAsync();
     }
-    // HT analytics
+    
+    
+    
+    // 🟣🟣🟣 ANALYTICS - KPIs LOGIC 🟣🟣🟣 //
     public async Task<decimal> GetTotalTVAAsync()
     {
         return await _context.LignesFacture
@@ -134,7 +137,6 @@ public class FactureService : IFactureService
             .ToDictionaryAsync(k => k.Product, v => v.Total);
     }
 
-    // TTC analytics (including timbre fiscal for totals, but for per-client/per-month/per-product we omit timbre because timbre is per invoice and not easily split; the requirement usually expects TTC without timbre in granular breakdown. Here we follow common practice: TTC per category = CA TTC without timbre.)
     public async Task<decimal> GetChiffreAffairesTTCAsync()
     {
         var caTTC = await _context.LignesFacture

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cZIXCqO4Trw=",
+  "dgSpecHash": "3iQVlYc93jM=",
   "success": true,
-  "projectFilePath": "/Users/mac/Desktop/InvoicingProjectCopy/InvoicingApp/InvoicingApp.csproj",
+  "projectFilePath": "/Users/mac/Desktop/InvoicingProject-FacturaPro/InvoicingApp/InvoicingApp.csproj",
   "expectedPackageFiles": [
     "/Users/mac/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/mac/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.6/microsoft.aspnetcore.app.internal.assets.10.0.6.nupkg.sha512",

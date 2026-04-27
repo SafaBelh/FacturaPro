@@ -9,7 +9,7 @@ public interface IFactureService
     Task AddFactureAsync(Facture facture, List<LigneFacture> lignes);
     Task DeleteFactureAsync(int id);
 
-    // Dashboard – HT
+    // 🟣🟣🟣 ANALYTICS - KPIs LOGIC 🟣🟣🟣 //
     Task<decimal> GetTotalTVAAsync();
     Task<Dictionary<decimal, decimal>> GetTVAParTauxAsync();
     Task<decimal> GetTotalTimbreFiscalAsync();
@@ -18,7 +18,6 @@ public interface IFactureService
     Task<Dictionary<int, decimal>> GetCAHTPerMonthAsync();
     Task<Dictionary<string, decimal>> GetSalesPerProductAsync();
 
-    // Dashboard – TTC (with timbre)
     Task<decimal> GetChiffreAffairesTTCAsync();
     Task<Dictionary<string, decimal>> GetTTCCPerClientAsync();
     Task<Dictionary<int, decimal>> GetTTCCPerMonthAsync();

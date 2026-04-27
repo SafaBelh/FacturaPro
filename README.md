@@ -4,7 +4,7 @@
 
 **Auteurs :** Safa Belhouche (52%) · Fawz El Houda Ghalba (48%)  
 **Technologie :** .NET 10 · Blazor Server · Entity Framework Core · SQLite · Radzen  
-**Année :** 2025 · École Polytechnique de Sousse  
+**Année :** 2026 · École Polytechnique de Sousse  
 **🔗 Blueprint interactif :** [facturation-dotnet-project-blueprin.vercel.app](https://facturation-dotnet-project-blueprin.vercel.app/)
 
 
@@ -18,7 +18,7 @@ Projet développé dans le cadre des **TP1 à TP9** du cours Programmation .NET 
 
 | Pages Razor | Entités EF Core | Services DI | Charts Radzen | Méthodes async |
 |:-----------:|:---------------:|:-----------:|:-------------:|:--------------:|
-| **10** | **4** | **5** | **4** | **16** |
+| **10** | **4** | **5** | **5** | **16** |
 
 
 
@@ -127,7 +127,6 @@ Identifiants : `admin@facturapro.tn` / `admin123`
 Projet réalisé dans le cadre du module **Programmation .NET C#** à l'**École Polytechnique de Sousse** (2026).  
 Merci à notre enseignant **M. Saïd SASSI** pour les TP structurés (TP1 à TP9).
 
----
 
 ## ⚖️ Licence
 

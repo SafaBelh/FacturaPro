@@ -1,0 +1,28 @@
+<div class="fp-kpi-card">
+    <div class="fp-kpi-top">
+        <div class="fp-kpi-icon @IconClass">
+            <i class="bi @IconName"></i>
+        </div>
+        @if (!string.IsNullOrEmpty(DeltaLabel))
+        {
+            <span class="fp-kpi-delta @DeltaClass">
+                <i class="bi bi-arrow-@(DeltaDirection)-right"></i> @DeltaLabel
+            </span>
+        }
+    </div>
+    <div class="fp-kpi-body">
+        <div class="fp-kpi-label">@Label</div>
+        <div class="fp-kpi-value">@Value</div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string IconName { get; set; } = "bi-percent";
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "0 DT";
+    [Parameter] public string DeltaLabel { get; set; } = "";
+    [Parameter] public string DeltaDirection { get; set; } = "up"; // "up" or "down"
+    [Parameter] public string IconClass { get; set; } = ""; // optional CSS class for the icon container
+
+    private string DeltaClass => DeltaDirection == "up" ? "up" : "down";
+}

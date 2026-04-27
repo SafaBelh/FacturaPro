@@ -1,7 +1,7 @@
 namespace InvoicingApp.Services;
 
-// Singleton — one instance for the entire app lifetime.
-// This ensures Login.razor and MainLayout.razor share the exact same state.
+// 🟣🟣🟣 Singleton — one instance for the entire app lifetime 🟣🟣🟣 //
+
 public class AuthService
 {
     private bool _isLoggedIn = false;

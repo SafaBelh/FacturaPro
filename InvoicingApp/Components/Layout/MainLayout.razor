@@ -4,12 +4,12 @@
 @inject NavigationManager Nav
 
 <div class="fp-shell">
-    <!-- Sidebar -->
+    <!-- 🟣🟣🟣 SIDEBAR 🟣🟣🟣 -->
     <div class="fp-sidebar">
         <NavMenu />
     </div>
 
-    <!-- Main area -->
+    <!-- 🟣🟣🟣 MAIN AREA 🟣🟣🟣 -->
     <div class="fp-main">
         <header class="fp-topbar">
             <div class="fp-topbar-left">
@@ -37,6 +37,8 @@
 </div>
 
 @code {
+
+    // 🟣🟣🟣 AUTH & PROTECTION 🟣🟣🟣 //
     protected override void OnInitialized()
     {
         var currentPath = new Uri(Nav.Uri).AbsolutePath.TrimStart('/');

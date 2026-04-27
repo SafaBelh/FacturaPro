@@ -13,7 +13,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Configure decimal precision (optional but recommended)
+        // 🟣🟣🟣 DECIMAL CONFIGURATION 🟣🟣🟣 //
         modelBuilder.Entity<Produit>()
             .Property(p => p.PrixHT)
             .HasColumnType("decimal(18,2)");

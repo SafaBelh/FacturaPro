@@ -3,7 +3,7 @@
 @inject NavigationManager Nav
 @rendermode InteractiveServer
 
-<!-- Brand -->
+<!-- 🟣🟣🟣 BRAND 🟣🟣🟣 -->
 <div class="fp-brand">
     <div class="fp-brand-icon">
         <i class="bi bi-receipt-cutoff"></i>
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<!-- Navigation links -->
+<!-- 🟣🟣🟣 NAVIGATION LINKS 🟣🟣🟣 -->
 <nav class="fp-nav">
     <NavLink class="fp-nav-item" href="dashboard" Match="NavLinkMatch.All">
         <span class="fp-nav-icon"><i class="bi bi-speedometer2"></i></span>
@@ -49,7 +49,7 @@
     </NavLink>
 </nav>
 
-<!-- Footer -->
+<!-- 🟣🟣🟣 FOOTER SIDEBAR 🟣🟣🟣 -->
 <div class="fp-sidebar-footer">
     <div class="fp-online-badge">
         <span class="fp-online-dot"></span>
@@ -68,6 +68,7 @@
     </div>
 </div>
 
+<!-- 🟣🟣🟣 STYLING 🟣🟣🟣 -->
 <style>
     .fp-logout-btn {
         display: grid;
@@ -92,6 +93,8 @@
 </style>
 
 @code {
+
+    // 🟣🟣🟣 HANDLE LOGOUT 🟣🟣🟣 //
     private void HandleLogout()
     {
         Auth.Logout();

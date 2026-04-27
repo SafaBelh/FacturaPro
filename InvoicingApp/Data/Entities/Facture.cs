@@ -12,7 +12,7 @@ public class Facture
     public int ClientId { get; set; }
     public Client Client { get; set; } = null!;
 
-    public decimal TimbreFiscal { get; set; } = 1.0m; // paramétrable
+    public decimal TimbreFiscal { get; set; } = 1.0m; 
 
     public ICollection<LigneFacture> Lignes { get; set; } = new List<LigneFacture>();
 
