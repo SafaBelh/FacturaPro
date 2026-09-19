@@ -2,7 +2,7 @@
 
 ![Banner](InvoicingApp/banner.png)
 
-**Auteurs :** Safa Belhouche (52%) · Fawz El Houda Ghalba (48%)  
+**Auteurs :** Safa Belhouche (100%)   
 **Technologie :** .NET 10 · Blazor Server · Entity Framework Core · SQLite · Radzen  
 **Année :** 2026 · École Polytechnique de Sousse  
 **🔗 Blueprint interactif :** [facturation-dotnet-project-blueprin.vercel.app](https://facturation-dotnet-project-blueprin.vercel.app/)
@@ -130,5 +130,5 @@ Merci à notre enseignant **M. Saïd SASSI** pour les TP structurés (TP1 à TP9
 
 ## ⚖️ Licence
 
-**Copyright © 2025 – Safa Belhouche & Fawz El Houda Ghalba – Tous droits réservés.**  
+**Copyright © 2025 – Safa Belhouche – Tous droits réservés.**  
 À usage pédagogique uniquement.
